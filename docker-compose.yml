@@ -1,0 +1,46 @@
+# Resumify on your machine in one command:
+#
+#   $env:LLM_API_KEY='<a free Groq key>'      # PowerShell; or export LLM_API_KEY=... in bash
+#   docker compose up --build
+#   docker compose exec app python -m scripts.seed_demo   # Meera's demo account with real matches
+#
+# then open http://localhost:4000/demo (password DEMO_PASSWORD below).
+# MongoDB runs as a one-node replica set, as Atlas does (matches are saved in a transaction).
+
+services:
+  db:
+    image: mongo:8
+    command: ['--replSet', 'rs0', '--bind_ip_all']
+    volumes:
+      - resumify-mongo:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "try { rs.status().ok } catch (e) { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'db:27017' }] }).ok }"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '4000:4000'
+    environment:
+      APP_ENV: development
+      MONGODB_URI: mongodb://db:27017/resumify_demo?replicaSet=rs0
+      JWT_SECRET: local-only-secret-change-me-0123456789abcdef
+      FRONTEND_URL: http://localhost:4000
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-oss-120b}
+      LLM_API_KEY: ${LLM_API_KEY:?Set LLM_API_KEY to a Groq (or other OpenAI-compatible) API key first}
+      DEMO_MODE: 'true'
+      DEMO_PASSWORD: resumify-demo-1
+      SMTP_HOST: ${SMTP_HOST:-smtp.ethereal.email}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-set-me}
+      SMTP_PASS: ${SMTP_PASS:-set-me}
+      SMTP_FROM: ${SMTP_FROM:-Resumify <no-reply@resumify.test>}
+
+volumes:
+  resumify-mongo:

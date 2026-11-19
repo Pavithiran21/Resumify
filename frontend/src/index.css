@@ -1,0 +1,1897 @@
+@import 'tailwindcss';
+
+/* The device's own UI font (Segoe UI, San Francisco, Roboto), as job sites use: nothing to download. */
+
+/*
+ * Design tokens (UI-UX.md "Brand"). The light theme (owner's choice, 8 Nov 2026): a lilac-grey
+ * page, white panels and dark text, like a job site, with a white sidebar; the toasts stay dark
+ * (see .toast below, which resets these tokens for everything inside it). Every text colour
+ * is at least 4.5:1 on white and on the page.
+ */
+@theme {
+  --color-bg: #f6f4fa;
+  --color-panel: #ffffff;
+  --color-panel2: #f9f8fc;
+  --color-stroke: #e7e3ef;
+  --color-stroke2: #d9d4e4;
+  --color-text: #2b2638;
+  --color-strong: #15111f;
+  --color-muted: #5f5a6e;
+  --color-dim: #6e6880;
+  /* Gold as text and icons on white (the bright #f6c453 stays in the gradient). */
+  --color-gold: #a16207;
+  --color-coral: #f08a5d;
+  --color-magenta: #e14eca;
+  --color-violet: #7b2ff2;
+  --color-match: #15803d;
+  --color-miss: #be185d;
+  --color-info: #3b5bdb;
+  --color-good: #a16207;
+  --color-fair: #c2410c;
+  --color-weak: #5f5a6e;
+  --color-danger: #d1243f;
+  --color-err-text: #b4142f;
+  /* The one accent for controls: job-site blue, 5.7:1 on white (white text on it too). */
+  --color-accent: #0a66c2;
+  --color-accent-hover: #004182;
+
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* UI-UX.md "Layout and responsive": phone below 860 px, desktop from 1150 px. */
+  --breakpoint-tab: 53.75rem;
+  --breakpoint-desk: 71.875rem;
+}
+
+:root {
+  /* The sunset gradient for fills (buttons, bars, the gauge arc, the logo). */
+  --grad: linear-gradient(120deg, #f6c453 0%, #f08a5d 45%, #e14eca 100%);
+  /* The same gradient, deeper, for gradient text on white (score numbers, "ify"): 3:1 or more. */
+  /* The channels of overlay colours: dark ink on the light page, white inside the dark scope. */
+  --ink: 27 23 38;
+  --shadow: 0 1px 2px rgb(27 23 38 / 0.06), 0 10px 28px -14px rgb(76 45 140 / 0.22);
+  --match-s: rgb(21 128 61 / 0.08);
+  --miss-s: rgb(190 24 93 / 0.07);
+  --info-s: rgb(59 91 219 / 0.08);
+  --accent-s: rgb(10 102 194 / 0.08);
+}
+
+@layer base {
+  html {
+    background: var(--color-bg);
+    color-scheme: light;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--color-text);
+    font: 400 14px/1.5 var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /*
+   * The brand background (UI-UX.md "Background") is painted on a fixed layer behind the page,
+   * never with background-attachment: fixed: iOS Safari ignores that (the hairline would scroll
+   * away), and a fixed multi-layer background is repainted on every scroll. This layer is
+   * painted once and only composited while the page scrolls.
+   * App screens: a soft colour sweep under a 3 px sunset hairline: pale job-site blue at the top
+   * left, the lilac page in the middle, pale peach at the bottom right. Light enough that the white
+   * panels, the tables and the score still carry the screen.
+   */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      var(--grad) 0 0 / 100% 3px no-repeat,
+      radial-gradient(1100px 720px at 0% 0%, rgb(10 102 194 / 0.15), transparent 70%),
+      radial-gradient(1100px 720px at 100% 100%, rgb(240 138 93 / 0.15), transparent 70%),
+      linear-gradient(135deg, #e3ecf9 0%, #eff0fa 35%, #f5f3f9 58%, #fcece4 100%);
+  }
+
+  /* Log in, Create account and password reset (AuthLayout sets data-screen): the same sweep,
+     stronger, and one large faint blue circle behind the card. */
+  body[data-screen='auth']::before {
+    background:
+      var(--grad) 0 0 / 100% 3px no-repeat,
+      radial-gradient(circle 470px at 50% 52%, rgb(10 102 194 / 0.07) 99%, transparent 100%),
+      radial-gradient(1200px 760px at 0% 0%, rgb(10 102 194 / 0.17), transparent 70%),
+      radial-gradient(1100px 760px at 100% 100%, rgb(240 138 93 / 0.17), transparent 70%),
+      linear-gradient(135deg, #e1ebf9 0%, #eef0fa 35%, #f5f2f8 60%, #fcebe2 100%);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    color: var(--color-strong);
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  b,
+  strong {
+    font-weight: 600;
+    color: var(--color-strong);
+  }
+
+  /* No underlines on links, on hover or otherwise (owner's rule); the few inline sentence links use .link-u. */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* The blue focus ring (3:1 or more on white and on the page; UI-UX.md "Keyboard"). */
+  :focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--color-bg),
+      0 0 0 4px var(--color-accent);
+  }
+
+  svg.tabler-icon {
+    stroke-width: 1.75;
+  }
+
+  ::selection {
+    background: rgb(10 102 194 / 0.2);
+    color: var(--color-strong);
+  }
+}
+
+@layer components {
+  /* Four heading steps (UI-UX.md "Type"). */
+  .t-screen {
+    font-size: 24px;
+  }
+  .t-card {
+    font-size: 20px;
+  }
+  .t-lead {
+    font-size: 18px;
+  }
+  .t-panel {
+    font-size: 16px;
+  }
+
+  .muted {
+    color: var(--color-muted);
+  }
+  .dim {
+    color: var(--color-dim);
+  }
+  .crumbs {
+    font-size: 13px;
+    color: var(--color-dim);
+  }
+  .crumbs a:hover {
+    color: var(--color-strong);
+  }
+
+  /* A score in its verdict's colour (inside an element with a .ring-* class): the gauge number,
+     the breakdown bars and Compare's scores, the same colours as the list rings. */
+  .v-text {
+    color: var(--ring);
+  }
+
+  /* Panels: white, no border, 18 px radius and a soft violet-tinted shadow. */
+  .panel {
+    background: var(--color-panel);
+    border: 0;
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    min-width: 0;
+  }
+  .pad {
+    padding: 24px;
+  }
+  /* One key panel per screen gets a 3 px accent strip along its top edge. */
+  .glow {
+    position: relative;
+  }
+  .glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 22px;
+    right: 22px;
+    height: 3px;
+    border-radius: 0 0 4px 4px;
+    background: var(--color-accent);
+    pointer-events: none;
+  }
+
+  .sub {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-muted);
+    margin: 18px 0 8px;
+  }
+  .sub.first {
+    margin-top: 0;
+  }
+
+  /* Buttons */
+  .btn {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 9px 16px;
+    font: 600 14px var(--font-sans);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .btn-xs {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: #fff;
+  }
+  .btn-primary:hover:not([disabled]) {
+    background: var(--color-accent-hover);
+  }
+  .btn-secondary {
+    background: var(--color-panel);
+    border-color: var(--color-stroke2);
+  }
+  .btn-secondary:hover:not([disabled]) {
+    background: rgb(var(--ink) / 0.04);
+  }
+  .btn-danger {
+    background: rgb(255 107 129 / 0.15);
+    border-color: rgb(255 107 129 / 0.5);
+    color: #b4142f;
+  }
+  .btn-danger:hover:not([disabled]) {
+    background: rgb(255 107 129 / 0.22);
+  }
+  .btn[disabled],
+  .btn[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .btn[aria-busy='true'] {
+    cursor: progress;
+  }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    animation: spin 0.8s linear infinite;
+    flex: none;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--color-stroke2);
+    background: rgb(var(--ink) / 0.04);
+    display: grid;
+    place-items: center;
+    color: var(--color-text);
+  }
+  .icon-btn.sm {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+  .icon-btn[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  /* Text links: blue and bold, never underlined. */
+  .link {
+    color: var(--color-accent);
+    font-weight: 700;
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  /* The few inline links in sentences ("Create a free account", "upload a TXT, PDF or DOCX", "Send a new link"). */
+  .link-u {
+    color: var(--color-accent);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+  /* "Keep me logged in": a native checkbox (keyboard and screen readers work as usual), in the accent blue. */
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-muted);
+    cursor: pointer;
+  }
+  .check input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-accent);
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+
+  /* Form fields */
+  .field {
+    margin-bottom: 16px;
+  }
+  .field > label,
+  .label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text);
+    margin-bottom: 7px;
+  }
+  .field .opt {
+    color: var(--color-dim);
+    font-weight: 500;
+  }
+  .inp {
+    position: relative;
+  }
+  .inp > .lead {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-dim);
+    pointer-events: none;
+  }
+  .inp > .end {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 0;
+    background: none;
+    display: grid;
+    place-items: center;
+    color: var(--color-dim);
+  }
+  .inp > .end:hover {
+    color: var(--color-strong);
+  }
+  .ctl {
+    width: 100%;
+    font: 400 14px var(--font-sans);
+    color: var(--color-strong);
+    background: rgb(var(--ink) / 0.04);
+    border: 1px solid var(--color-stroke2);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .inp > .lead ~ .ctl {
+    padding-left: 42px;
+  }
+  .inp.with-end .ctl {
+    padding-right: 46px;
+  }
+  textarea.ctl {
+    resize: vertical;
+    line-height: 1.6;
+    font-size: 14px;
+    min-height: 140px;
+  }
+  .ctl::placeholder {
+    color: var(--color-dim);
+  }
+  .bad .ctl {
+    border-color: rgb(255 107 129 / 0.7);
+    background: rgb(255 107 129 / 0.06);
+  }
+  .ferr {
+    color: var(--color-err-text);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 7px;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .ferr svg {
+    flex: none;
+    margin-top: 2px;
+  }
+  .hint {
+    color: var(--color-muted);
+    font-size: 13px;
+    margin-top: 7px;
+  }
+  .ro {
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px dashed var(--color-stroke2);
+    color: var(--color-muted);
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+  /* A native select styled as the design's pill selector (.sel). */
+  .sel {
+    appearance: none;
+    padding: 7px 34px 7px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--color-stroke2);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236e6880' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6l6 -6'/%3E%3C/svg%3E")
+        right 10px center / 16px no-repeat,
+      rgb(var(--ink) / 0.04);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    max-width: 100%;
+    text-overflow: ellipsis;
+  }
+  .sel option {
+    background: var(--color-panel2);
+    color: var(--color-text);
+  }
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 4px 0 10px;
+  }
+
+  /* Chips, pills, the version tag */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid;
+    line-height: 1.3;
+  }
+  .chip.sm {
+    font-size: 12px;
+    padding: 3px 9px;
+  }
+  .c-match {
+    background: var(--match-s);
+    color: var(--color-match);
+    border-color: rgb(94 227 154 / 0.35);
+  }
+  .c-miss {
+    background: var(--miss-s);
+    color: var(--color-miss);
+    border-color: rgb(255 138 168 / 0.35);
+  }
+  .c-info {
+    background: var(--info-s);
+    color: var(--color-info);
+    border-color: rgb(159 180 255 / 0.35);
+  }
+  .c-good {
+    background: rgb(246 196 83 / 0.12);
+    color: var(--color-good);
+    border-color: rgb(246 196 83 / 0.38);
+  }
+  .c-fair {
+    background: rgb(240 138 93 / 0.12);
+    color: var(--color-fair);
+    border-color: rgb(240 138 93 / 0.4);
+  }
+  .c-weak {
+    background: rgb(var(--ink) / 0.06);
+    color: var(--color-weak);
+    border-color: var(--color-stroke2);
+  }
+  /* A score in a list: a ring filled to the score in the verdict's colour, "32%" in the middle and
+     the verdict word beside it (components/Score.jsx). */
+  .score-ring {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .score-ring .dial {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: none;
+  }
+  .score-ring svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .score-ring .tint {
+    fill: var(--ring-tint);
+  }
+  .score-ring .track {
+    fill: none;
+    stroke: var(--color-stroke);
+    stroke-width: 5;
+  }
+  .score-ring .arc {
+    fill: none;
+    stroke: var(--ring);
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+  .score-ring b {
+    position: relative;
+    font: 800 12px var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--color-strong);
+  }
+  /* A fixed width, so the rings line up in a column whatever the word ("Weak" or "Perfect"). */
+  .score-ring .word {
+    min-width: 54px;
+    text-align: left;
+    font: 700 13px var(--font-display);
+    color: var(--ring);
+  }
+  /* The verdict colours (each passes 4.5:1 as text and 3:1 as the ring on white). */
+  .ring-perfect {
+    --ring: var(--color-match);
+    --ring-tint: rgb(21 128 61 / 0.1);
+  }
+  .ring-good {
+    --ring: var(--color-good);
+    --ring-tint: rgb(161 98 7 / 0.1);
+  }
+  .ring-fair {
+    --ring: var(--color-fair);
+    --ring-tint: rgb(194 65 12 / 0.09);
+  }
+  .ring-weak {
+    --ring: var(--color-muted);
+    --ring-tint: rgb(var(--ink) / 0.05);
+  }
+  /* The result's "when to apply" line beside the verdict chip. */
+  .advice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+  .ver {
+    font: 700 11px var(--font-display);
+    padding: 2px 7px;
+    border-radius: 6px;
+    color: var(--color-text);
+    background: rgb(var(--ink) / 0.07);
+    border: 1px solid var(--color-stroke2);
+    vertical-align: 2px;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  .code {
+    font: 700 10px var(--font-display);
+    color: var(--color-dim);
+    border: 1px solid var(--color-stroke2);
+    border-radius: 5px;
+    padding: 1px 5px;
+    margin-left: 8px;
+    vertical-align: 2px;
+    letter-spacing: 0.04em;
+  }
+  .kw {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Notes and banners */
+  .note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .note > svg {
+    flex: none;
+    margin-top: 2px;
+  }
+  .note b {
+    color: var(--color-strong);
+  }
+  .note.err {
+    border: 1px solid rgb(255 107 129 / 0.45);
+    background: rgb(255 107 129 / 0.08);
+    color: #b4142f;
+  }
+  .note.warn {
+    border: 1px solid rgb(246 196 83 / 0.4);
+    background: rgb(246 196 83 / 0.08);
+    color: #854d0e;
+  }
+  .note.inf {
+    border: 1px solid rgb(159 180 255 / 0.35);
+    background: var(--info-s);
+    color: #1e3a8a;
+  }
+  .note.ok {
+    border: 1px solid rgb(94 227 154 / 0.35);
+    background: var(--match-s);
+    color: #14532d;
+  }
+
+  /* Tables (lists of resumes, jobs, matches) */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .tbl th {
+    text-align: left;
+    font-size: 12px;
+    color: var(--color-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-stroke2);
+  }
+  .tbl td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-stroke);
+    vertical-align: middle;
+  }
+  .tbl td + td,
+  .tbl th + th {
+    padding-left: 12px;
+  }
+  .tbl tr:last-child td {
+    border-bottom: 0;
+  }
+  /* A row that opens its item: the whole row is the link's target area. */
+  .row-link {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .row-link:hover b,
+  .row-link:focus-visible b {
+    color: var(--color-accent);
+  }
+  .tbl tr:has(.row-link) {
+    cursor: pointer;
+  }
+  .tbl tr:has(.row-link):hover td {
+    background: rgb(var(--ink) / 0.02);
+  }
+  .meta {
+    font-size: 12px;
+    color: var(--color-dim);
+  }
+  /*
+   * Wide tables (Past matches, Jobs): on a wide screen each detail has its own column
+   * (.col-wide) and the meta line under the title is hidden (.meta-narrow); below 1150 px the
+   * columns hide and the meta line shows instead (see the tablet media query).
+   */
+  .tbl .meta-narrow {
+    display: none;
+  }
+  .tbl .col-wide {
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .tbl .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .tbl .file-name {
+    display: block;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* App shell: a white sidebar with labelled items (desktop and tablet), a white top row of labelled icons (phone) */
+  .shell {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+  /*
+   * The dark scope: the toasts stay a dark pill on the light page. They reset the colour tokens
+   * for everything inside them, so the shared rules (text, overlays, focus ring) draw them
+   * light-on-dark without separate copies.
+   */
+  .toast {
+    --color-panel2: #1c1a25;
+    --color-stroke: #2a2734;
+    --color-stroke2: #3a3647;
+    --color-text: #ece9f3;
+    --color-strong: #fff;
+    --color-muted: #a39fb3;
+    --color-dim: #8b87a0;
+    --color-gold: #f6c453;
+    --color-match: #5ee39a;
+    --color-danger: #ff6b81;
+    --color-err-text: #ffa3b2;
+    --color-accent: #70b5f9;
+    --ink: 255 255 255;
+    color: var(--color-text);
+  }
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: var(--color-panel);
+    border-right: 1px solid var(--color-stroke);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 12px;
+    z-index: 10;
+  }
+  /* The logo with the wordmark is the button that collapses the sidebar (860 px and up). */
+  .sidebar .sb-brand {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    border-radius: 10px;
+  }
+  .sidebar .sb-brand:hover {
+    background: rgb(var(--ink) / 0.04);
+  }
+  .sidebar .sb-brand:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--color-panel),
+      0 0 0 4px var(--color-accent);
+  }
+  /* Phone only (see the media query): the logo as a link home. */
+  .sidebar .sb-home {
+    display: none;
+  }
+  .sidebar .sp {
+    flex: 1;
+  }
+  /* An item: icon and label; the open page is a light-blue pill with blue text and the filled icon. */
+  .sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-muted);
+  }
+  .sidebar .nav-item:hover {
+    color: var(--color-strong);
+    background: rgb(var(--ink) / 0.04);
+  }
+  .sidebar .nav-item.active {
+    color: var(--color-accent);
+    background: var(--accent-s);
+  }
+  .sidebar .nav-item:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--color-panel),
+      0 0 0 4px var(--color-accent);
+  }
+  /* Centred in the space beside the sidebar, so a wide screen gets even margins on both sides. */
+  .content {
+    padding: 26px 28px 60px;
+    min-width: 0;
+    max-width: 1440px;
+    width: 100%;
+    margin-inline: auto;
+  }
+  .screen-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .screen-head > .grow {
+    flex: 1 1 240px;
+    min-width: 0;
+  }
+  .screen-head h1 {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* Two- and three-column screen layouts (they stack on smaller screens, see the media queries). */
+  .grid2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+  }
+
+  /* Score gauge (half circle) */
+  .gauge {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+    aspect-ratio: 320 / 190;
+    margin: 0 auto;
+  }
+  .gauge svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .gauge .num {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 5%;
+    text-align: center;
+  }
+  .gauge .num b {
+    font: 700 56px/1 var(--font-display);
+  }
+  .gauge.mini {
+    width: 230px;
+  }
+  .gauge.mini .num {
+    bottom: 1%;
+  }
+  .gauge.mini .num b {
+    font-size: 44px;
+  }
+  /* The arc fills once when a result opens (the one motion besides the skeleton). */
+  .arc {
+    animation: fill 0.7s ease-out both;
+  }
+  @keyframes fill {
+    from {
+      stroke-dasharray: 0 408.4;
+    }
+  }
+
+  /* Result hero, breakdown, columns */
+  .hero {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+    padding: 26px;
+    border-radius: 22px;
+    margin: 14px 0 18px;
+    background: radial-gradient(520px 260px at 30% -20%, rgb(225 78 202 / 0.07), transparent 70%), var(--color-panel);
+    box-shadow: var(--shadow);
+  }
+  .bk {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .bk > div {
+    padding: 14px;
+    border-radius: 14px;
+    background: rgb(var(--ink) / 0.03);
+    border: 1px solid var(--color-stroke);
+  }
+  .bk small {
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .bk b {
+    display: block;
+    font: 600 18px var(--font-display);
+    margin: 2px 0 8px;
+  }
+  .bk b.na {
+    color: var(--color-muted);
+  }
+  .bar,
+  .prog {
+    height: 6px;
+    border-radius: 6px;
+    background: rgb(var(--ink) / 0.08);
+    overflow: hidden;
+  }
+  .bar > span,
+  .prog > span {
+    display: block;
+    height: 100%;
+  }
+  /* A breakdown bar is in the result's verdict colour (the hero has its .ring-* class). */
+  .bar > span {
+    background: var(--ring, var(--color-accent));
+  }
+  /* Upload progress isn't a score: the accent blue. */
+  .prog > span {
+    background: var(--color-accent);
+  }
+  .prog {
+    margin-top: 6px;
+  }
+  /* Jobs and Resumes as cards (3 across on a wide screen, 1 on a phone). The title's link covers the
+     whole card (::after), so a click anywhere opens it; the footer's own link sits above it. */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .lcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--color-stroke);
+    border-radius: 14px;
+    background: var(--color-panel);
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s,
+      transform 0.15s;
+  }
+  .lcard:hover,
+  .lcard:focus-within {
+    border-color: rgb(10 102 194 / 0.45);
+    box-shadow: var(--shadow);
+  }
+  .lcard:hover {
+    transform: translateY(-1px);
+  }
+  .lcard-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .lcard-title {
+    font: 600 15px var(--font-display);
+    color: var(--color-strong);
+    overflow-wrap: anywhere;
+  }
+  .lcard-title::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .lcard-title:hover {
+    color: var(--color-accent);
+  }
+  .lcard-foot {
+    display: flex;
+    flex-wrap: wrap; /* the best ring and the button stack on a 320 px screen */
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-stroke);
+  }
+  .lcard-foot a {
+    position: relative;
+    z-index: 1;
+  }
+  .company-badge,
+  .file-badge {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: 11px;
+  }
+  .company-badge {
+    color: #fff;
+    font: 700 19px var(--font-display);
+  }
+  .file-badge {
+    background: rgb(var(--ink) / 0.04);
+  }
+  .best {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .best-cap {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-dim);
+  }
+  /* The result's Missing and Matched skills: small cards in a grid across the full width. */
+  .skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .sk h2 {
+    font-size: 16px;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .item {
+    padding: 14px 16px;
+    border: 1px solid var(--color-stroke);
+    border-radius: 14px;
+    /* White, like the panel: the green and pink chips keep 4.5:1 only on white. */
+    background: var(--color-panel);
+    min-width: 0;
+  }
+  .item > p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .by {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-muted);
+    margin-left: 8px;
+  }
+  .by.ai {
+    color: var(--color-info);
+  }
+  .quote {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 3px 6px;
+    margin: 7px 0 0;
+    font-size: 13px;
+  }
+  .quote dt {
+    color: var(--color-dim);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 2px;
+  }
+  .quote[hidden] {
+    display: none;
+  }
+  .quote dd {
+    margin: 0;
+    color: var(--color-text);
+    font-style: italic;
+    overflow-wrap: anywhere;
+  }
+  .quote dd::before {
+    content: '\201C';
+  }
+  .quote dd::after {
+    content: '\201D';
+  }
+  /* The skill's own words inside a quote, so the evidence can be skimmed. */
+  mark {
+    background: rgb(246 196 83 / 0.2);
+    color: var(--color-strong);
+    font-style: normal;
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 0 3px;
+  }
+  .qx {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 8px 0 0;
+    font: 700 12px var(--font-sans);
+    color: var(--color-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .qx:hover {
+    color: var(--color-strong);
+  }
+  .rot {
+    transform: rotate(180deg);
+  }
+  .fix {
+    position: relative;
+    padding-left: 26px;
+    margin: 0;
+    list-style: none;
+  }
+  .fix::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--color-stroke2);
+  }
+  .fix li {
+    position: relative;
+    padding: 10px 0 14px;
+    font-size: 14px;
+    color: var(--color-muted);
+    counter-increment: fix;
+  }
+  .fix li::before {
+    content: counter(fix);
+    position: absolute;
+    left: -26px;
+    top: 9px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font: 700 11px var(--font-display);
+    color: #fff;
+    background: var(--color-accent);
+  }
+  .fix {
+    counter-reset: fix;
+  }
+  details.kwd > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  details.kwd > summary::-webkit-details-marker {
+    display: none;
+  }
+  details.kwd[open] > summary .chev {
+    transform: rotate(180deg);
+  }
+  details.kwd > summary:focus-visible {
+    border-radius: 8px;
+  }
+
+  /* Running a match: the real steps, as an explanation (one request, no progress events) */
+  .run {
+    list-style: none;
+    margin: 12px 0 4px;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .run li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--color-muted);
+  }
+  .run li > span {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: rgb(var(--ink) / 0.05);
+    border: 1px solid var(--color-stroke2);
+    color: var(--color-accent);
+    flex: none;
+  }
+  .skel {
+    height: 12px;
+    border-radius: 6px;
+    margin: 9px 0;
+    background: linear-gradient(90deg, rgb(var(--ink) / 0.05), rgb(var(--ink) / 0.12), rgb(var(--ink) / 0.05));
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  .skel.block {
+    height: auto;
+    border-radius: 18px;
+    margin: 0;
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Home */
+  .home {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: stretch;
+    margin-top: 18px;
+  }
+  .latest {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 22px;
+    align-items: center;
+    align-content: center;
+    flex: 1;
+    margin-bottom: 18px;
+  }
+  .lib {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .lib a {
+    display: block;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--color-stroke);
+    background: rgb(var(--ink) / 0.03);
+    color: var(--color-text);
+  }
+  .lib a:hover {
+    border-color: var(--color-stroke2);
+  }
+  .lib small,
+  .facts small {
+    display: block;
+    color: var(--color-dim);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .lib b {
+    font: 700 24px var(--font-display);
+  }
+
+  /* New match */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+  }
+  .steps li {
+    padding: 9px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-dim);
+    background: rgb(var(--ink) / 0.03);
+    border: 1px solid var(--color-stroke);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+  }
+  .steps li.done {
+    color: var(--color-match);
+    border-color: rgb(94 227 154 / 0.3);
+  }
+  .steps li.on {
+    color: var(--color-strong);
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--color-panel2), var(--color-panel2)) padding-box,
+      var(--color-accent) border-box;
+  }
+  /* Resumify's choice pills: separate pills; the chosen one is blue. */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tabs [role='tab'] {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-muted);
+    border: 1px solid var(--color-stroke2);
+    background: none;
+  }
+  .tabs [role='tab'][aria-selected='true'] {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--accent-s);
+  }
+  .two {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 12px;
+  }
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--color-stroke);
+    background: rgb(var(--ink) / 0.03);
+    margin-top: 10px;
+    min-width: 0;
+  }
+  .file > .grow {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .file.bad {
+    border-color: rgb(255 107 129 / 0.45);
+  }
+  .file.good {
+    border-color: rgb(94 227 154 / 0.35);
+  }
+  .file .err-text {
+    color: var(--color-err-text);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  /* A radio option (a resume or a saved job): a native radio inside a label, so arrow keys and
+     screen readers work as usual; the chosen one gets a blue ring. */
+  .option {
+    cursor: pointer;
+    color: var(--color-text);
+  }
+  .option:hover {
+    border-color: var(--color-stroke2);
+  }
+  /* The radio itself, drawn as the design's ring (and a blue dot when chosen). */
+  .option input[type='radio'] {
+    appearance: none;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    border-radius: 50%;
+    border: 2px solid var(--color-dim);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .option input[type='radio']:checked {
+    border-color: var(--color-accent);
+  }
+  .option input[type='radio']:checked::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  /* The focus ring goes round the whole option, not the small ring. */
+  .option input[type='radio']:focus-visible {
+    box-shadow: none;
+  }
+  .option:has(input:checked) {
+    border-color: var(--color-accent);
+    background: var(--accent-s);
+  }
+  .option:has(input:focus-visible) {
+    box-shadow:
+      0 0 0 2px var(--color-bg),
+      0 0 0 4px var(--color-accent);
+  }
+  .option-list {
+    display: grid;
+    gap: 10px;
+  }
+  .option-list .file {
+    margin-top: 0;
+  }
+  .drop {
+    border: 1.5px dashed var(--color-stroke2);
+    border-radius: 16px;
+    padding: 26px;
+    text-align: center;
+    background: var(--color-panel2);
+  }
+  .drop.over {
+    border-color: var(--color-accent);
+    background: var(--accent-s);
+  }
+  .drop.compact {
+    padding: 18px;
+  }
+
+  /* Compare */
+  .vs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    margin: 14px 0 16px;
+  }
+  .vs .score {
+    font: 700 44px/1 var(--font-display);
+    display: block;
+  }
+  .vs .cap {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .diff {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px 90px;
+    font-size: 14px;
+  }
+  /* The cells sit inside display: contents rows (role="row"), so they are grid items of .diff. */
+  .diff [role='cell'],
+  .diff [role='columnheader'] {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--color-stroke);
+    min-width: 0;
+  }
+  .diff .hd {
+    color: var(--color-dim);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .up {
+    color: var(--color-match);
+    font-weight: 700;
+  }
+
+  /* Resume and job views */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .facts > div {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgb(var(--ink) / 0.03);
+    border: 1px solid var(--color-stroke);
+  }
+  .facts b {
+    font: 600 15px var(--font-display);
+  }
+  .rv-title {
+    font-size: 20px;
+    margin: 0;
+    flex: 1 1 180px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  /* "View resume": the browser's own PDF viewer, most of a screen tall. */
+  .pdf-frame {
+    display: block;
+    width: 100%;
+    height: min(80vh, 1100px);
+    border: 1px solid var(--color-stroke);
+    border-radius: 12px;
+    background: var(--color-panel);
+  }
+  /* A job's description, in full (no inner scroll box), across its card. */
+  .desc {
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--color-stroke);
+    background: rgb(var(--ink) / 0.02);
+    font-size: 14px;
+    color: var(--color-muted);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+
+  /* Log in: a centred white card on the soft blue glow, floating white product-preview chips */
+  .auth {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    /* One column exactly as wide as the screen: an auto column grows to the card's 420 px and the
+       card then sticks out of a phone, clipped by overflow: hidden below. */
+    grid-template-columns: minmax(0, 1fr);
+    place-items: center;
+    padding: 50px 20px;
+    overflow: hidden;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 32px;
+    background: var(--color-panel);
+    border-radius: 22px;
+    position: relative;
+    z-index: 2;
+  }
+  .orbit {
+    position: absolute;
+    z-index: 1;
+  }
+  /* White chips (their text and border keep the state colour). */
+  .orbit .chip {
+    background-color: var(--color-panel);
+    box-shadow: var(--shadow);
+  }
+  .demo {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px dashed var(--color-stroke2);
+    background: rgb(var(--ink) / 0.03);
+  }
+
+  /* Dialogs: native <dialog>, centred over a dark scrim on every screen size */
+  .dlg {
+    width: calc(100% - 32px);
+    max-width: 420px;
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    padding: 24px;
+    margin: auto;
+    background: var(--color-panel);
+    color: var(--color-text);
+    border: 0;
+    border-radius: 20px;
+    box-shadow: 0 40px 80px -30px rgb(27 23 38 / 0.3);
+  }
+  .dlg::backdrop {
+    background: rgb(27 23 38 / 0.5);
+  }
+  .dlg .ic {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgb(255 107 129 / 0.14);
+    color: var(--color-danger);
+    margin-bottom: 12px;
+  }
+  .dlg .ic.ok {
+    background: var(--accent-s);
+    color: var(--color-accent);
+  }
+  .dlg .ic.lock {
+    background: rgb(159 180 255 / 0.14);
+    color: var(--color-info);
+  }
+  .dlg h2 {
+    margin: 0 0 6px;
+  }
+  .dlg .acts {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  /* Toasts: bottom right, a dark pill; success has a gradient edge */
+  .toasts {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: calc(100% - 40px);
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 999px;
+    background: #1f1c29;
+    border: 1px solid var(--color-stroke2);
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 14px;
+    width: fit-content;
+    max-width: 100%;
+    box-shadow: 0 16px 32px -18px rgb(27 23 38 / 0.3);
+    pointer-events: auto;
+  }
+  .toast > svg {
+    flex: none;
+  }
+  .toast.g {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#1f1c29, #1f1c29) padding-box,
+      var(--color-accent) border-box;
+  }
+  .toast.err {
+    border-color: rgb(255 107 129 / 0.5);
+    border-radius: 16px;
+  }
+}
+
+/* Tablet (860-1149 px): Home, the hero and the two-column screens stack; result columns become two. */
+@media (width < 71.875rem) {
+  .hero,
+  .home,
+  .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .orbit {
+    display: none;
+  }
+  .tbl .col-wide {
+    display: none;
+  }
+  .tbl .meta-narrow {
+    display: block;
+  }
+}
+
+/* Phone (< 860 px, designed at 375 px) */
+@media (width < 53.75rem) {
+  .two,
+  .grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Three slim one-line breakdown rows (label, value, bar) instead of three tall tiles. */
+  .bk {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .bk > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
+    padding: 8px 12px;
+  }
+  .bk b {
+    font-size: 16px;
+    margin: 0;
+  }
+  .bk .bar,
+  .bk > div > .note-line {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+  }
+  .facts {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  /* Three short counts (Profile, "Your data") still fit in one row on a phone. */
+  .facts.facts-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .latest {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gauge {
+    width: 260px;
+  }
+  .gauge .num b {
+    font-size: 48px;
+  }
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  /* The sidebar becomes a top row of the logo and five labelled icons (no tab bar, no hamburger). */
+  .sidebar {
+    height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-stroke);
+  }
+  /* Nothing to collapse on a phone: the logo is a link home instead of the toggle. */
+  .sidebar .sb-brand,
+  .sidebar .sp {
+    display: none;
+  }
+  .sidebar .sb-home {
+    display: flex;
+  }
+  .sidebar .nav-item {
+    min-width: 50px;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .content {
+    padding: 16px 16px 60px;
+  }
+  .t-screen {
+    font-size: 20px;
+  }
+  .rv-title {
+    font-size: 18px;
+  }
+  .auth {
+    padding: 28px 16px;
+  }
+  .auth-card {
+    padding: 24px 20px;
+  }
+  .toasts {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-width: none;
+    align-items: stretch;
+  }
+  .toast {
+    width: auto;
+    border-radius: 16px;
+  }
+  .hero {
+    padding: 18px;
+  }
+  .diff {
+    grid-template-columns: minmax(0, 1fr) 76px 76px;
+  }
+  .vs .score {
+    font-size: 36px;
+  }
+}
+
+/* Desktop (1150 px and up): the full-width "Fix these first" puts its numbered suggestions side by
+   side, each number above its text (below 1150 px it stays the vertical numbered timeline). */
+@media (width >= 71.875rem) {
+  .fix-panel .fix {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px 28px;
+    padding-left: 0;
+  }
+  .fix-panel .fix::before {
+    display: none;
+  }
+  .fix-panel .fix li {
+    padding: 30px 0 0;
+  }
+  .fix-panel .fix li::before {
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+}
+
+/* Desktop and tablet (860 px and up): the sidebar collapses to a 72 px strip of icons (AppShell's toggle). */
+@media (width >= 53.75rem) {
+  .shell {
+    transition: grid-template-columns 0.18s ease;
+  }
+  .shell.collapsed {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+  .shell.collapsed .sidebar {
+    padding-inline: 10px;
+  }
+  .shell.collapsed .sb-brand {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .shell.collapsed .sb-word {
+    display: none;
+  }
+  .shell.collapsed .nav-item {
+    position: relative;
+    justify-content: center;
+    padding: 10px 0;
+  }
+  /*
+   * Tooltips, shown on hover or focus: the logo's ("Collapse menu" or "Expand menu") always, and
+   * each item's label while collapsed (it stays in the page, as the link's name).
+   */
+  .sidebar .sb-tip,
+  .shell.collapsed .nav-item .lb {
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: var(--color-strong);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .sidebar .sb-brand:hover .sb-tip,
+  .sidebar .sb-brand:focus-visible .sb-tip,
+  .shell.collapsed .nav-item:hover .lb,
+  .shell.collapsed .nav-item:focus-visible .lb {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc,
+  .skel,
+  .spinner {
+    animation: none;
+  }
+  .shell,
+  .lcard {
+    transition: none;
+  }
+  .lcard:hover {
+    transform: none;
+  }
+}
