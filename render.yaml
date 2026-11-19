@@ -25,6 +25,8 @@ services:
         value: https://api.groq.com/openai/v1
       - key: LLM_MODEL
         value: openai/gpt-oss-120b
+      - key: LLM_REASONING_EFFORT
+        value: low # gpt-oss spends its answer tokens thinking otherwise, and the match reply is cut off
       - key: JWT_SECRET
         generateValue: true
       - key: MONGODB_URI
