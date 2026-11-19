@@ -6,7 +6,7 @@
 # Free services sleep after 15 minutes without traffic; the first visit then takes about a minute.
 services:
   - type: web
-    name: resumify
+    name: resumify-pavithiran
     runtime: docker
     plan: free
     healthCheckPath: /api/health
