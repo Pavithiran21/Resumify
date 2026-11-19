@@ -6,15 +6,21 @@ from app.core.errors import AppError
 router = APIRouter(prefix="/api/demo", tags=["demo"])
 
 DEMO_USER_EMAIL = "user@demo.resumify.test"
+OTHER_USER_EMAIL = "other@demo.resumify.test"
 
 
 @router.get("")
 async def demo_accounts():
     """
-    With DEMO_MODE=true the login page shows the demo account and its public, demo-only
-    password, with a "Log in as User" button. Off otherwise.
+    With DEMO_MODE=true the demo page shows the two demo accounts and their public, demo-only
+    password, with a "Log in as User" and a "Log in as Second user" button. Off otherwise.
     """
     settings = get_settings()
     if not settings.demo_mode:
         raise AppError(404, "NOT_FOUND", "Demo mode is off.")
-    return {"accounts": [{"role": "User", "email": DEMO_USER_EMAIL, "password": settings.demo_password}]}
+    return {
+        "accounts": [
+            {"role": "User", "email": DEMO_USER_EMAIL, "password": settings.demo_password},
+            {"role": "Second user", "email": OTHER_USER_EMAIL, "password": settings.demo_password},
+        ]
+    }

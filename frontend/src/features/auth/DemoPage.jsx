@@ -6,8 +6,8 @@ import { DemoBlock } from './DemoBlock';
 import { useDemoAccounts } from './useDemoAccounts';
 
 /**
- * Try the demo (UI-UX.md screen 1b, at /demo): the demo account's email and its public, demo-only
- * password with "Log in as User". Log in at / stays a plain form. With demo mode off the server has
+ * Try the demo (UI-UX.md screen 1b, at /demo): the demo accounts' emails and their public, demo-only
+ * password, one "Log in as <role>" button each. Log in at / stays a plain form. With demo mode off the server has
  * no demo, and this page says so.
  */
 export function DemoPage() {
@@ -21,7 +21,7 @@ export function DemoPage() {
         <h1 className="t-screen mt-3 mb-1">Try the demo</h1>
         <p className="muted mt-0 mb-0">
           {isPending || available
-            ? 'A ready-made account with resumes, jobs and matches. Nothing you do here is kept.'
+            ? 'Two ready-made accounts. The first has resumes, jobs and matches; the second has its own, separate data. Nothing you do here is kept.'
             : "There's no demo on this server."}
         </p>
       </div>

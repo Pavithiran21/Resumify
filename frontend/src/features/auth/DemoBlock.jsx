@@ -6,7 +6,7 @@ import { errorMessage } from '../../lib/apiErrors';
 import { useDemoAccounts } from './useDemoAccounts';
 
 /**
- * Demo mode only: the demo account's email and its public, demo-only password, with "Log in as User".
+ * Demo mode only: each demo account's email and the public, demo-only password, with "Log in as <role>".
  * Shown on the demo page (/demo). GET /demo answers 404 when demo mode is off; then nothing shows.
  */
 export function DemoBlock() {
@@ -31,12 +31,12 @@ export function DemoBlock() {
   }
 
   return (
-    <section className="demo" aria-label="Demo account">
+    <section className="demo" aria-label="Demo accounts">
       {data.accounts.map((account) => (
-        <div key={account.email}>
+        <div key={account.email} className="not-first:mt-4">
           <div className="flex items-center gap-2.5">
             <b className="flex flex-1 items-center gap-1.5 text-[13px]">
-              <IconPresentation size={16} className="text-accent" aria-hidden="true" /> Demo account
+              <IconPresentation size={16} className="text-accent" aria-hidden="true" /> {account.role}
             </b>
             <Button size="xs" pending={pendingEmail === account.email} onClick={() => logInAs(account)}>
               <IconLogin2 size={16} aria-hidden="true" /> Log in as {account.role}

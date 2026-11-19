@@ -121,11 +121,12 @@ docker compose exec app python -m scripts.seed_demo   # then open http://localho
 
 ## Demo accounts
 
-With `DEMO_MODE=true`, open **http://localhost:5173/demo** and choose **Log in as User**. The password is the one you set in `DEMO_PASSWORD`.
+With `DEMO_MODE=true`, open **http://localhost:5173/demo** and choose **Log in as User** or **Log in as Second user**. The password is the one you set in `DEMO_PASSWORD`.
 
 | Role | Email | What to try |
 |------|-------|-------------|
 | User | `user@demo.resumify.test` | Open a saved match and read the quoted reasons, run a new match, compare two runs of the same resume and job (same inputs, same score), upload a new resume version. Blocked: a match of `other@demo.resumify.test` opened by its id gives "not found". |
+| Second user | `other@demo.resumify.test` | Arjun's own, separate data (one resume, one job, one match). Meera's resumes, jobs and matches are not visible to him, and his are not visible to her. |
 
 Demo accounts cannot change their email or password or delete themselves.
 
