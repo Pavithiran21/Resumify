@@ -151,10 +151,13 @@ npm test        # writes backend/.env.test, the fixtures and the seeded accounts
 
 ## Deploy
 
-One free [Render](https://render.com) web service from the `Dockerfile` (see [`render.yaml`](render.yaml)): FastAPI serves the built frontend, so the app, the API and the refresh cookie share one origin.
+The frontend runs on [Vercel](https://vercel.com) and the API on [Render](https://render.com), and the browser still sees one origin: [`frontend/vercel.json`](frontend/vercel.json) forwards `/api/*` to the Render service, so the cookies (SameSite=Strict) work with no CORS or cross-site cookies.
+
+- **Frontend (Vercel):** import the repository, set the Root Directory to `frontend` (framework Vite, build `npm run build`, output `dist`). `vercel.json` also sends every other path to `index.html` for React Router and sets the page's security headers. If the Render service is renamed, change its URL in `vercel.json`.
+- **API (Render):** one free web service from `Dockerfile.api` (see [`render.yaml`](render.yaml)). The full `Dockerfile` (API plus built frontend on one origin) is what `docker-compose.yml` and CI use.
 
 - **Database:** MongoDB Atlas free M0, database `resumify_demo` (a replica set, which the match transaction needs; allow Render's outbound IPs under Network Access).
-- **Settings:** `APP_ENV=production`, `FORWARDED_ALLOW_IPS=*` (uvicorn then trusts Render's proxy, so rate limits see the visitor's IP), `DEMO_MODE=true`, `FRONTEND_URL` = the service URL, `LLM_API_KEY` (Groq), and SMTP plus `DEMO_SMTP_*`.
+- **Settings:** `APP_ENV=production`, `FORWARDED_ALLOW_IPS=*` (uvicorn then trusts Render's proxy, so rate limits see the visitor's IP), `DEMO_MODE=true`, `FRONTEND_URL` = the Vercel URL, `LLM_API_KEY` (Groq), and SMTP plus `DEMO_SMTP_*`.
 - **Demo data:** run `python -m scripts.seed_demo` once from the service's Shell (it calls the model for the sample matches).
 
 ## Demo videos
