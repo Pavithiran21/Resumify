@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Pavithiran21/Resumify/actions/workflows/ci.yml/badge.svg)](https://github.com/Pavithiran21/Resumify/actions/workflows/ci.yml)
 
-**Live demo: [resumify-pavithiran.onrender.com/demo](https://resumify-pavithiran.onrender.com/demo)** (log in as the demo user in one click). It runs on free hosting, so the first load after a quiet spell can take about a minute.
+**Live demo: [resumify-iota-nine.vercel.app/demo](https://resumify-iota-nine.vercel.app/demo)** (log in as the demo user in one click). It runs on free hosting, so the first load after a quiet spell can take about a minute.
 
 A resume-to-job matcher that explains its answer. You upload a resume, paste or upload a job description, and Resumify scores the match. It lists the skills you have and the ones you are missing, each with the line from the resume or the job that proves it, and suggests what to improve.
 
