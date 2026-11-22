@@ -6,8 +6,8 @@ import { DemoBlock } from './DemoBlock';
 import { useDemoAccounts } from './useDemoAccounts';
 
 /**
- * Try the demo (UI-UX.md screen 1b, at /demo): the demo accounts' emails and their public, demo-only
- * password, one "Log in as <role>" button each. Log in at / stays a plain form. With demo mode off the server has
+ * Try the demo (UI-UX.md screen 1b, at /demo): the demo accounts' emails, one password-free "Log in as <role>"
+ * button each. Log in at / stays a plain form. With demo mode off the server has
  * no demo, and this page says so.
  */
 export function DemoPage() {

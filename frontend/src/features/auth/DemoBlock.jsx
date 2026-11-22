@@ -1,16 +1,19 @@
 import { IconAlertCircle, IconLogin2, IconPresentation } from '@tabler/icons-react';
 import { useState } from 'react';
+import { demoLogin } from '../../api/demo';
 import { useAuth } from '../../auth/AuthContext';
 import { Button } from '../../components/Button';
 import { errorMessage } from '../../lib/apiErrors';
 import { useDemoAccounts } from './useDemoAccounts';
 
 /**
- * Demo mode only: each demo account's email and the public, demo-only password, with "Log in as <role>".
- * Shown on the demo page (/demo). GET /demo answers 404 when demo mode is off; then nothing shows.
+ * Demo mode only: each demo account's email, with "Log in as <role>". The button asks the backend to
+ * start the session, so no password is shown or held by the page (a public page that prints credentials
+ * gets flagged as phishing). Shown on the demo page (/demo). GET /demo answers 404 when demo mode is off;
+ * then nothing shows.
  */
 export function DemoBlock() {
-  const { login } = useAuth();
+  const { startSession } = useAuth();
   const [pendingEmail, setPendingEmail] = useState(null);
   const [error, setError] = useState(null);
   const { data } = useDemoAccounts();
@@ -23,7 +26,7 @@ export function DemoBlock() {
     setPendingEmail(account.email);
     setError(null);
     try {
-      await login({ email: account.email, password: account.password });
+      startSession(await demoLogin(account.role));
     } catch (loginError) {
       setError(errorMessage(loginError));
       setPendingEmail(null);
@@ -42,9 +45,7 @@ export function DemoBlock() {
               <IconLogin2 size={16} aria-hidden="true" /> Log in as {account.role}
             </Button>
           </div>
-          <div className="dim mt-1.5 text-xs break-all">
-            {account.email} · {account.password}
-          </div>
+          <div className="dim mt-1.5 text-xs break-all">{account.email}</div>
         </div>
       ))}
       {error && (
